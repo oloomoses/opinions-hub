@@ -1,17 +1,18 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-var DB *sql.DB
-
-func Connect() (*sql.DB, error) {
+func Connect() (*gorm.DB, error) {
 
 	dns := fmt.Sprintf(
 		"postgres://%s:%s@localhost:5432/%s?sslmode=disable",
@@ -22,24 +23,31 @@ func Connect() (*sql.DB, error) {
 
 	fmt.Println(dns)
 
-	db, err := sql.Open("pgx", dns)
+	// db, err := sql.Open("pgx", dns)
+
+	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				SlowThreshold: time.Second,
+				LogLevel:      logger.Info,
+				Colorful:      true,
+			},
+		),
+	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	maxConns := 20
-	maxIdle := 10
+	sqlDB, _ := db.DB()
 
-	db.SetMaxOpenConns(maxConns)
-	db.SetMaxIdleConns(maxIdle)
-	db.SetConnMaxLifetime(30 * time.Minute)
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(25)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)
 
-	if err := db.Ping(); err != nil {
+	if err := sqlDB.Ping(); err != nil {
 		return nil, err
 	}
-
-	DB = db
-
 	return db, nil
 }

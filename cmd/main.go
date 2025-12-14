@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/oloomoses/opinions-hub/internal/config"
 	"github.com/oloomoses/opinions-hub/internal/database"
+	"github.com/oloomoses/opinions-hub/internal/server"
 )
 
 func main() {
@@ -19,22 +19,20 @@ func main() {
 		log.Fatal("Failed to load config", err)
 	}
 
-	db, err := database.Connect()
+	dbConn, err := database.Connect()
 
 	if err != nil {
 		log.Fatal("db error: ", err)
 	}
 
-	defer db.Close()
+	_ = dbConn
 
-	srv := &http.Server{
-		Addr: ":8080",
-	}
+	srv := server.New(":8080")
 
 	go func() {
 		log.Println("server started")
 
-		if err := srv.ListenAndServe(); err != nil {
+		if err := srv.Start(); err != nil {
 			log.Print(err)
 		}
 	}()
@@ -51,5 +49,5 @@ func main() {
 
 	defer cancel()
 
-	srv.Shutdown(ctx)
+	srv.ShutDown(ctx)
 }
