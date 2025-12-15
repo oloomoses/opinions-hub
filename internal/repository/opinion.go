@@ -13,8 +13,8 @@ func NewOpinionRepo(db *gorm.DB) *Opinion {
 	return &Opinion{DB: db}
 }
 
-func (op *Opinion) Create(content string) error {
-	return op.DB.Create(content).Error
+func (op *Opinion) Create(opinion *models.Opinion) error {
+	return op.DB.Create(opinion).Error
 }
 
 func (op *Opinion) GetAll() ([]models.Opinion, error) {
