@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/oloomoses/opinions-hub/internal/config"
-	"github.com/oloomoses/opinions-hub/internal/database"
+	"github.com/oloomoses/opinions-hub/internal/router"
 	"github.com/oloomoses/opinions-hub/internal/server"
 )
 
@@ -19,23 +19,13 @@ func main() {
 		log.Fatal("Failed to load config", err)
 	}
 
-	dbConn, err := database.Connect()
+	sconf := config.LoadServerConfig()
 
-	if err != nil {
-		log.Fatal("db error: ", err)
-	}
+	r := router.New()
 
-	_ = dbConn
+	svr := server.New(sconf.Addr, r)
 
-	srv := server.New(":8080")
-
-	go func() {
-		log.Println("server started")
-
-		if err := srv.Start(); err != nil {
-			log.Print(err)
-		}
-	}()
+	svr.Start()
 
 	quit := make(chan os.Signal, 1)
 
@@ -43,11 +33,9 @@ func main() {
 
 	<-quit
 
-	log.Println("shutting down......")
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
 	defer cancel()
+	svr.ShutDown(ctx)
 
-	srv.ShutDown(ctx)
 }
