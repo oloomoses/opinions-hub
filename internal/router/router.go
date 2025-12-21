@@ -34,6 +34,9 @@ func New() *gin.Engine {
 
 	{
 		api.GET("/opinions", opinionHandler.AllOpinions)
+		api.POST("/opinion", opinionHandler.CreateOpinion)
+		api.PATCH("/opinion/:id", opinionHandler.UpdateOpinion)
+		api.DELETE("opinion/:id", opinionHandler.DeleteOpinion)
 
 	}
 
