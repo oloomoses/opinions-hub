@@ -5,6 +5,14 @@ import (
 	"gorm.io/gorm"
 )
 
+type OpinionRepo interface {
+	Create(*models.Opinion)
+	GetAll()
+	GetByID(id uint)
+	Update(id uint, update map[string]interface{})
+	Delete(id uint)
+}
+
 type Opinion struct {
 	DB *gorm.DB
 }
@@ -14,13 +22,17 @@ func NewOpinionRepo(db *gorm.DB) *Opinion {
 }
 
 func (op *Opinion) Create(opinion *models.Opinion) error {
+	if err := opinion.ValidateContentCannotBeEmpty(); err != nil {
+		return err
+	}
+
 	return op.DB.Create(opinion).Error
 }
 
 func (op *Opinion) GetAll() ([]models.Opinion, error) {
 	var opinions []models.Opinion
 
-	err := op.DB.Find(&opinions).Error
+	err := op.DB.Order("id ASC").Find(&opinions).Error
 
 	return opinions, err
 }
