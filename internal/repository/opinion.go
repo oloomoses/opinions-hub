@@ -46,9 +46,29 @@ func (op *Opinion) GetByID(id uint) (models.Opinion, error) {
 }
 
 func (op *Opinion) Update(id uint, updates map[string]interface{}) error {
-	return op.DB.Model(&models.Opinion{}).Where("id=?", id).Updates(updates).Error
+	result := op.DB.Model(&models.Opinion{}).Where("id=?", id).Updates(updates)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
 }
 
 func (op *Opinion) Delete(id uint) error {
-	return op.DB.Delete(&models.Opinion{}, id).Error
+	result := op.DB.Delete(&models.Opinion{}, id)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
 }

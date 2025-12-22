@@ -56,12 +56,7 @@ func TestOpinionRepository_Create(t *testing.T) {
 
 			assert.NoError(t, err)
 
-			// var created models.Opinion
-
 			opin, err := opinionRepo.GetByID(uint(op.ID))
-			// tx.First(&created, "content = ?", tt.content)
-
-			// assert.Equal(t, tt.content, created.Content)
 			assert.NoError(t, err)
 			assert.NotZero(t, opin.ID)
 
@@ -126,4 +121,120 @@ func TestOpinionRepo_GetByID(t *testing.T) {
 	assert.NotNil(t, found)
 	assert.Equal(t, opn.ID, found.ID)
 	assert.Equal(t, opn.Content, found.Content)
+}
+
+func TestOpinionRepo_Update(t *testing.T) {
+	db := testDB()
+
+	tx := db.Begin()
+
+	defer tx.Rollback()
+
+	opinionRepo := repository.NewOpinionRepo(tx)
+
+	savedOpn := &models.Opinion{Content: "Original Opinion"}
+
+	err := opinionRepo.Create(savedOpn)
+
+	assert.NoError(t, err)
+	assert.NotZero(t, savedOpn.ID)
+
+	update := make(map[string]interface{})
+
+	update["content"] = "Updated Opinion"
+
+	testCase := []struct {
+		tcase   string
+		id      uint
+		update  map[string]interface{}
+		wantErr bool
+	}{
+		{
+			tcase:   "Successfull Update",
+			id:      uint(savedOpn.ID),
+			update:  update,
+			wantErr: false,
+		},
+		{
+			tcase:   "Unsuccesful Update",
+			id:      9999,
+			update:  update,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range testCase {
+		t.Run(tt.tcase, func(t *testing.T) {
+			err := opinionRepo.Update(uint(tt.id), tt.update)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+				return
+			}
+
+			assert.NoError(t, err)
+
+			var updatedOpn models.Opinion
+
+			err = tx.First(&updatedOpn, tt.id).Error
+			assert.NoError(t, err)
+			assert.Equal(t, "Updated Opinion", updatedOpn.Content)
+
+		})
+	}
+}
+
+func TestOpinionRepo_Delete(t *testing.T) {
+	db := testDB()
+
+	tx := db.Begin()
+	defer tx.Rollback()
+
+	opnRepo := repository.NewOpinionRepo(tx)
+
+	opn := &models.Opinion{Content: "Opnionion to delete"}
+
+	err := opnRepo.Create(opn)
+
+	assert.NoError(t, err)
+	assert.NotZero(t, opn.ID)
+
+	delTests := []struct {
+		name    string
+		id      uint
+		wantErr bool
+	}{
+		{
+			name:    "Success if id is exitst",
+			id:      uint(opn.ID),
+			wantErr: false,
+		},
+
+		{
+			name:    "Fail if id not found",
+			id:      99999,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range delTests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := opnRepo.Delete(tt.id)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.NoError(t, err)
+
+			var opinion models.Opinion
+
+			err = tx.First(&opinion, opn.ID).Error
+
+			assert.Error(t, err)
+			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+		})
+	}
 }
