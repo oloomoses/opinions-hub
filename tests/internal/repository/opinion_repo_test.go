@@ -188,31 +188,26 @@ func TestOpinionRepo_Update(t *testing.T) {
 func TestOpinionRepo_Delete(t *testing.T) {
 	db := testDB()
 
-	tx := db.Begin()
-	defer tx.Rollback()
-
-	opnRepo := repository.NewOpinionRepo(tx)
-
-	opn := &models.Opinion{Content: "Opnionion to delete"}
-
-	err := opnRepo.Create(opn)
-
-	assert.NoError(t, err)
-	assert.NotZero(t, opn.ID)
-
 	delTests := []struct {
 		name    string
+		setup   func(repo repository.OpinionRepo) uint
 		id      uint
 		wantErr bool
 	}{
 		{
-			name:    "Success if id is exitst",
-			id:      uint(opn.ID),
+			name: "Success if id is exitst",
+			setup: func(repo repository.OpinionRepo) uint {
+				opn := &models.Opinion{Content: "Opinion to delete"}
+
+				_ = repo.Create(opn)
+				return uint(opn.ID)
+			},
 			wantErr: false,
 		},
 
 		{
 			name:    "Fail if id not found",
+			setup:   nil,
 			id:      99999,
 			wantErr: true,
 		},
@@ -220,7 +215,18 @@ func TestOpinionRepo_Delete(t *testing.T) {
 
 	for _, tt := range delTests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := opnRepo.Delete(tt.id)
+
+			tx := db.Begin()
+			defer tx.Rollback()
+
+			repo := repository.NewOpinionRepo(tx)
+
+			id := tt.id
+
+			if tt.setup != nil {
+				id = tt.setup(repo)
+			}
+			err := repo.Delete(id)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -231,7 +237,7 @@ func TestOpinionRepo_Delete(t *testing.T) {
 
 			var opinion models.Opinion
 
-			err = tx.First(&opinion, opn.ID).Error
+			err = tx.First(&opinion, id).Error
 
 			assert.Error(t, err)
 			assert.ErrorIs(t, err, gorm.ErrRecordNotFound)

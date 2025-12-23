@@ -6,11 +6,11 @@ import (
 )
 
 type OpinionRepo interface {
-	Create(*models.Opinion)
-	GetAll()
-	GetByID(id uint)
-	Update(id uint, update map[string]interface{})
-	Delete(id uint)
+	Create(*models.Opinion) error
+	GetAll() ([]models.Opinion, error)
+	GetByID(id uint) (models.Opinion, error)
+	Update(id uint, update map[string]interface{}) error
+	Delete(id uint) error
 }
 
 type Opinion struct {
