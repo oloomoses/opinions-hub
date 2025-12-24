@@ -29,6 +29,7 @@ func New() *gin.Engine {
 	)
 
 	r.GET("/health", handlers.Health)
+	r.Static("/uploads", "./uploads")
 
 	api := r.Group("api/v1")
 
