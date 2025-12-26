@@ -21,6 +21,11 @@ type UserResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type LoginUserRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 func HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 

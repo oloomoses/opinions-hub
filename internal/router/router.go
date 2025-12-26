@@ -45,5 +45,6 @@ func New() *gin.Engine {
 	}
 
 	r.POST("/signup", userHandler.CreateUser)
+	r.POST("/login", userHandler.Login)
 	return r
 }

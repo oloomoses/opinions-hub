@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/oloomoses/opinions-hub/internal/models"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -53,4 +56,18 @@ func (r *UserRepo) DeleteUser(id uint64) error {
 
 	return nil
 
+}
+
+func (r *UserRepo) VerifyUser(username string, password string) error {
+	var user models.User
+
+	if err := r.DB.Where("username = ?", username).First(&user).Error; err != nil {
+		return errors.New("invald username or password!")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return errors.New("invalid username or password")
+	}
+
+	return nil
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/oloomoses/opinions-hub/internal/dto"
@@ -46,4 +47,29 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, user)
+}
+
+func (h *UserHandler) Login(c *gin.Context) {
+	var input dto.LoginUserRequest
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	username := strings.TrimSpace(input.Username)
+	password := input.Password
+
+	if username == "" || password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username or password cannot be empty"})
+		return
+	}
+
+	if err := h.repo.VerifyUser(username, password); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, input)
+
 }
