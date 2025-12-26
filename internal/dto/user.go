@@ -3,6 +3,7 @@ package dto
 import (
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,6 +25,12 @@ type UserResponse struct {
 type LoginUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type JwtClaims struct {
+	UserID   uint   `json:"user_id"`
+	Username string `json:"username"`
+	jwt.RegisteredClaims
 }
 
 func HashPassword(password string) (string, error) {

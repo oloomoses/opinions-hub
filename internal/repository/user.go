@@ -58,16 +58,16 @@ func (r *UserRepo) DeleteUser(id uint64) error {
 
 }
 
-func (r *UserRepo) VerifyUser(username string, password string) error {
+func (r *UserRepo) VerifyUser(username string, password string) (models.User, error) {
 	var user models.User
 
 	if err := r.DB.Where("username = ?", username).First(&user).Error; err != nil {
-		return errors.New("invald username or password!")
+		return user, errors.New("invald username or password!")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return errors.New("invalid username or password")
+		return user, errors.New("invalid username or password")
 	}
 
-	return nil
+	return user, nil
 }

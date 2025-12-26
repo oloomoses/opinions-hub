@@ -8,6 +8,7 @@ import (
 	"github.com/oloomoses/opinions-hub/internal/dto"
 	"github.com/oloomoses/opinions-hub/internal/models"
 	"github.com/oloomoses/opinions-hub/internal/repository"
+	"github.com/oloomoses/opinions-hub/internal/service/auth"
 )
 
 type UserHandler struct {
@@ -49,7 +50,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-func (h *UserHandler) Login(c *gin.Context) {
+func (h *UserHandler) LoginUser(c *gin.Context) {
 	var input dto.LoginUserRequest
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -65,11 +66,18 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	if err := h.repo.VerifyUser(username, password); err != nil {
+	user, err := h.repo.VerifyUser(username, password)
+
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, input)
+	accessToken, _ := auth.GenerateAccessToken(uint(user.ID), user.Username)
+
+	c.JSON(http.StatusOK, gin.H{
+		"User":        user,
+		"AccessToken": accessToken,
+	})
 
 }
