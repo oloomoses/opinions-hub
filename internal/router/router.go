@@ -23,6 +23,9 @@ func New() *gin.Engine {
 	opinionRepo := repository.NewOpinionRepo(dbConn)
 	opinionHandler := handlers.NewOpinionHandler(opinionRepo)
 
+	userRepo := repository.NewUserRepo(dbConn)
+	userHandler := handlers.NewUserHandler(userRepo)
+
 	r.Use(
 		gin.Logger(),
 		gin.Recovery(),
@@ -41,5 +44,6 @@ func New() *gin.Engine {
 
 	}
 
+	r.POST("/signup", userHandler.CreateUser)
 	return r
 }

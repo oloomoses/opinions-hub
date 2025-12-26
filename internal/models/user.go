@@ -7,7 +7,6 @@ type User struct {
 	FirstName    string    `json:"first_name" gorm:"not null"`
 	LastName     string    `json:"last_name" gorm:"not null"`
 	Username     string    `json:"username" gorm:"not null;uniqueIndex"`
-	Handle       string    `json:"handle" gorm:"not null;uniqueIndex"`
 	PasswordHash string    `json:"-" gorm:"not null"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
