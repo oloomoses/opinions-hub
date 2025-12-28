@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/oloomoses/opinions-hub/internal/database"
 	"github.com/oloomoses/opinions-hub/internal/handlers"
+	"github.com/oloomoses/opinions-hub/internal/middleware"
 	"github.com/oloomoses/opinions-hub/internal/repository"
 )
 
@@ -34,13 +35,15 @@ func New() *gin.Engine {
 	r.GET("/health", handlers.Health)
 	r.Static("/uploads", "./uploads")
 
-	api := r.Group("api/v1")
+	protected := r.Group("api/v1")
+	protected.Use(middleware.LoginRequired())
 
 	{
-		api.GET("/opinions", opinionHandler.AllOpinions)
-		api.POST("/opinion", opinionHandler.CreateOpinion)
-		api.PATCH("/opinion/:id", opinionHandler.UpdateOpinion)
-		api.DELETE("opinion/:id", opinionHandler.DeleteOpinion)
+		protected.GET("/profile", userHandler.GetUserProfile)
+		protected.GET("/opinions", opinionHandler.AllOpinions)
+		protected.POST("/opinion", opinionHandler.CreateOpinion)
+		protected.PATCH("/opinion/:id", opinionHandler.UpdateOpinion)
+		protected.DELETE("opinion/:id", opinionHandler.DeleteOpinion)
 
 	}
 

@@ -56,6 +56,16 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
+func (h *UserHandler) GetUserProfile(c *gin.Context) {
+	userId, _ := c.Get("user_id")
+	username, _ := c.Get("username")
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":     userId,
+		"handle": username,
+	})
+}
+
 func (h *UserHandler) LoginUser(c *gin.Context) {
 	var input dto.LoginUserRequest
 
