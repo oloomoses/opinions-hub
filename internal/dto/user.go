@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type CreateUserRequest struct {
@@ -31,14 +30,4 @@ type JwtClaims struct {
 	UserID   uint   `json:"user_id"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
-}
-
-func HashPassword(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-
-	if err != nil {
-		return "", err
-	}
-
-	return string(hash), nil
 }

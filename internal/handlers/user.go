@@ -9,6 +9,7 @@ import (
 	"github.com/oloomoses/opinions-hub/internal/models"
 	"github.com/oloomoses/opinions-hub/internal/repository"
 	"github.com/oloomoses/opinions-hub/internal/service/auth"
+	"github.com/oloomoses/opinions-hub/internal/service/validator"
 )
 
 type UserHandler struct {
@@ -28,7 +29,12 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := dto.HashPassword(req.Password)
+	if err := validator.ValidateCreateUser(req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	hashedPassword, err := auth.HashPassword(req.Password)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
@@ -36,9 +42,9 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	user := models.User{
-		FirstName:    req.FirstName,
-		LastName:     req.LastName,
-		Username:     req.Username,
+		FirstName:    strings.TrimSpace(req.FirstName),
+		LastName:     strings.TrimSpace(req.LastName),
+		Username:     strings.TrimSpace(req.Username),
 		PasswordHash: hashedPassword,
 	}
 
