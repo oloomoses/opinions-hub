@@ -8,6 +8,7 @@ type User struct {
 	LastName     string    `json:"last_name" gorm:"not null"`
 	Username     string    `json:"username" gorm:"not null;uniqueIndex"`
 	PasswordHash string    `json:"-" gorm:"not null"`
+	Opinions     []Opinion `json:"opinions" gorm:"foreignKey:UserID"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }

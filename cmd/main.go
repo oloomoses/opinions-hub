@@ -15,7 +15,7 @@ import (
 
 func main() {
 
-	if err := config.Load(); err != nil {
+	if err := config.LoadDotEnv(); err != nil {
 		log.Fatal("Failed to load config", err)
 	}
 

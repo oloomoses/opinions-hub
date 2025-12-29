@@ -7,6 +7,7 @@ import (
 
 type Opinion struct {
 	ID        int64     `json:"id" gorm:"primaryKey"`
+	UserID    uint      `json:"user_id" gorm:"index"`
 	Content   string    `json:"content" gorm:"not null"`
 	Images    []Image   `json:"images" gorm:"foreignKey:OpinionID"`
 	CreatedAt time.Time `json:"created_at"`

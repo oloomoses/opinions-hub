@@ -2,6 +2,6 @@ package config
 
 import "github.com/joho/godotenv"
 
-func Load() error {
+func LoadDotEnv() error {
 	return godotenv.Load()
 }

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"mime/multipart"
 	"net/http"
@@ -25,16 +24,15 @@ func NewOpinionHandler(repo *repository.Opinion) *Opinion {
 }
 
 func (h *Opinion) CreateOpinion(c *gin.Context) {
+	userIDAny, exits := c.Get("user_id")
 
-	payload := c.PostForm("payload")
-
-	if payload == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "content cannot be blank"})
+	if !exits {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authorized"})
 		return
 	}
 
 	var req dto.CreateOpinionRequest
-	if err := json.Unmarshal([]byte(payload), &req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "payload is required"})
 		return
 	}
@@ -48,7 +46,7 @@ func (h *Opinion) CreateOpinion(c *gin.Context) {
 		return
 	}
 
-	opinion := models.Opinion{Content: req.Content}
+	opinion := models.Opinion{UserID: userIDAny.(uint), Content: req.Content}
 
 	if err := tx.Create(&opinion).Error; err != nil {
 		tx.Rollback()
