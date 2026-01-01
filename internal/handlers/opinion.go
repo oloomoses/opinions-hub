@@ -102,8 +102,9 @@ func (h *Opinion) CreateOpinion(c *gin.Context) {
 
 func (h *Opinion) AllOpinions(c *gin.Context) {
 	// var opnions []models.Opinion
+	userIDAny, _ := c.Get("user_id")
 
-	opnions, err := h.repo.GetAll()
+	opnions, _, err := h.repo.GetCurrentUserOpinions(userIDAny.(uint))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": err})

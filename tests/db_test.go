@@ -1,35 +1,35 @@
 package tests
 
 import (
-	"os"
-	"testing"
+	"sync"
 
 	"github.com/oloomoses/opinions-hub/internal/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-var GlobalDB *gorm.DB
+var TestDB *gorm.DB
+var once sync.Once
 
-func TestMain(m *testing.M) {
-	var err error
+func init() {
+	once.Do(func() {
+		db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 
-	GlobalDB, err = gorm.Open(
-		sqlite.Open("file::memory:?cache=shared"),
-		&gorm.Config{},
-	)
+		if err != nil {
+			panic("Failed to init test db: " + err.Error())
+		}
 
-	if err != nil {
-		panic(err)
-	}
+		err = db.AutoMigrate(
+			&models.Opinion{},
+			&models.Image{},
+			&models.User{},
+		)
 
-	// Migrate Models once
-	GlobalDB.AutoMigrate(
-		&models.Opinion{},
-	)
+		if err != nil {
+			panic("Failed to migrate test db: " + err.Error())
+		}
 
-	// run tests
-	code := m.Run()
+		TestDB = db
+	})
 
-	os.Exit(code)
 }

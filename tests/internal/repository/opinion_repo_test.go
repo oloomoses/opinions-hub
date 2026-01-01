@@ -244,3 +244,10 @@ func TestOpinionRepo_Delete(t *testing.T) {
 		})
 	}
 }
+
+// tests
+// 	- internal
+// 		- handlers
+// 		- models
+// 		- repository
+// 	db_test.go

@@ -72,3 +72,19 @@ func (op *Opinion) Delete(id uint) error {
 
 	return nil
 }
+
+func (op *Opinion) GetCurrentUserOpinions(user_id uint) ([]models.Opinion, int64, error) {
+	var opinions []models.Opinion
+	var total int64
+
+	query := op.DB.Model(&models.Opinion{}).Where("user_id = ?", user_id)
+
+	query.Count(&total)
+
+	err := query.
+		Preload("Images").
+		Order("created_at desc").
+		Find(&opinions).Error
+
+	return opinions, total, err
+}
