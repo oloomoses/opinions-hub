@@ -37,6 +37,24 @@ func (h *Opinion) CreateOpinion(c *gin.Context) {
 		return
 	}
 
+	var parentID *uint
+	opnIDStr := c.Param("opinion_id")
+
+	if opnIDStr != "" {
+		pid, err := strconv.ParseUint(c.Param("opinion_id"), 10, 64)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		pUint := uint(pid)
+
+		parentID = &pUint
+	}
+
+	//
+
 	// start db transaction
 	tx := h.repo.DB.Begin()
 
@@ -46,7 +64,11 @@ func (h *Opinion) CreateOpinion(c *gin.Context) {
 		return
 	}
 
-	opinion := models.Opinion{UserID: userIDAny.(uint), Content: req.Content}
+	opinion := models.Opinion{
+		UserID:   userIDAny.(uint),
+		Content:  req.Content,
+		ParentID: parentID,
+	}
 
 	if err := tx.Create(&opinion).Error; err != nil {
 		tx.Rollback()

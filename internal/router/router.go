@@ -44,6 +44,7 @@ func New() *gin.Engine {
 		protected.POST("/opinion", opinionHandler.CreateOpinion)
 		protected.PATCH("/opinion/:id", opinionHandler.UpdateOpinion)
 		protected.DELETE("opinion/:id", opinionHandler.DeleteOpinion)
+		protected.POST("opinion/:opinion_id", opinionHandler.CreateOpinion)
 
 	}
 
