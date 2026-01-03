@@ -71,3 +71,12 @@ func (r *UserRepo) VerifyUser(username string, password string) (models.User, er
 
 	return user, nil
 }
+
+// func (r *UserRepo) Follow(followerID, followingID int) error {
+// 	if followerID == followingID {
+// 		return errors.New("cannot self follow")
+// 	}
+
+// 	follower := &models.User{Model: gorm.Model{ID: uint(followerID)}}
+// 	return nil
+// }
