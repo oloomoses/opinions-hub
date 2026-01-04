@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -96,4 +97,61 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 		"AccessToken": accessToken,
 	})
 
+}
+
+func (h *UserHandler) FollowUser(c *gin.Context) {
+	currentUserID := c.GetUint("user_id")
+	followingID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+
+	if currentUserID == uint(followingID) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot self follow"})
+		return
+	}
+
+	if err := h.repo.Follow(currentUserID, uint(followingID)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to follow user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "follow success"})
+
+}
+
+func (h *UserHandler) Unfollow(c *gin.Context) {
+	currentUserID := c.GetUint("user_id")
+	followingID, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+
+	if err := h.repo.Unfollow(currentUserID, uint(followingID)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unfollowing failed!"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "unfollow success"})
+
+}
+
+func (h *UserHandler) GetFollowers(c *gin.Context) {
+	currentUserID := c.GetUint("user_id")
+
+	followers, err := h.repo.GetFollowers(currentUserID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot fetch followers, try again later!"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"followers": followers})
+}
+
+func (h *UserHandler) GetFollowing(c *gin.Context) {
+	currentUserID := c.GetUint("user_id")
+
+	following, err := h.repo.GetFollowing(currentUserID)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot fetch following, try again later!"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"following": following})
 }

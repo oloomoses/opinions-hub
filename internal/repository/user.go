@@ -72,11 +72,46 @@ func (r *UserRepo) VerifyUser(username string, password string) (models.User, er
 	return user, nil
 }
 
-// func (r *UserRepo) Follow(followerID, followingID int) error {
-// 	if followerID == followingID {
-// 		return errors.New("cannot self follow")
-// 	}
+func (r *UserRepo) Follow(followerID, followingID uint) error {
+	if followerID == followingID {
+		return errors.New("cannot self follow")
+	}
 
-// 	follower := &models.User{Model: gorm.Model{ID: uint(followerID)}}
-// 	return nil
-// }
+	follower := &models.User{ID: int64(followerID)}
+
+	result := r.DB.Model(follower).Association("Following").Append(&models.User{ID: int64(followingID)})
+
+	return result
+}
+
+func (r *UserRepo) Unfollow(followerID, followingID uint) error {
+	follower := &models.User{ID: int64(followerID)}
+
+	return r.DB.Model(follower).Association("Following").Delete(&models.User{ID: int64(followingID)})
+}
+
+func (r *UserRepo) GetFollowers(userID uint) ([]models.User, error) {
+	var user models.User
+
+	err := r.DB.Preload("Followers").First(&user, userID).Error
+
+	return user.Followers, err
+}
+
+func (r *UserRepo) GetFollowing(userID uint) ([]models.User, error) {
+	var user models.User
+
+	err := r.DB.Preload("Following").First(&user, userID).Error
+
+	return user.Following, err
+}
+
+func (r *UserRepo) IsFollowing(followeID, followingID uint) (bool, error) {
+	var count int64
+
+	err := r.DB.Table("user_follows").
+		Where("follower_id = ? AND following_id = ?", followeID, followingID).
+		Count(&count).Error
+
+	return count > 0, err
+}

@@ -48,6 +48,11 @@ func New() *gin.Engine {
 
 	}
 
+	protected.POST("/users/:id/follow", userHandler.FollowUser)
+	protected.DELETE("/users/:id/follow", userHandler.Unfollow)
+	protected.GET("/users/:id/following", userHandler.GetFollowing)
+	protected.GET("/users/:id/followers", userHandler.GetFollowers)
+
 	r.POST("/signup", userHandler.CreateUser)
 	r.POST("/login", userHandler.LoginUser)
 	return r
